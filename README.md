@@ -56,7 +56,7 @@ Complete these **before** the workshop:
 ### Option 2 — Local
 
 ```bash
-git clone https://github.com/your-org/redis-eats-agentic-workshop
+git clone https://github.com/bcooper-redis/redis-eats-agentic-workshop
 cd redis-eats-agentic-workshop
 pip install -r requirements.txt
 # Open notebooks/redis_eats_agentic_workshop.ipynb
