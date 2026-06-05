@@ -1,0 +1,57 @@
+[
+  {
+    "driver_id": "drv-001",
+    "name": "Marcus Johnson",
+    "phone": "555-2001",
+    "vehicle": "Honda Civic 2021",
+    "status": "delivering",
+    "current_order_id": "ord-1004",
+    "rating": 4.8,
+    "total_deliveries": 342,
+    "zone": "Downtown Chicago"
+  },
+  {
+    "driver_id": "drv-002",
+    "name": "Priya Sharma",
+    "phone": "555-2002",
+    "vehicle": "Toyota Prius 2022",
+    "status": "delivering",
+    "current_order_id": "ord-1002",
+    "rating": 4.9,
+    "total_deliveries": 518,
+    "zone": "North Side Chicago"
+  },
+  {
+    "driver_id": "drv-003",
+    "name": "Carlos Ruiz",
+    "phone": "555-2003",
+    "vehicle": "Ford Focus 2020",
+    "status": "at_restaurant",
+    "current_order_id": "ord-1003",
+    "rating": 4.7,
+    "total_deliveries": 271,
+    "zone": "West Loop Chicago"
+  },
+  {
+    "driver_id": "drv-004",
+    "name": "Aisha Thompson",
+    "phone": "555-2004",
+    "vehicle": "Hyundai Elantra 2023",
+    "status": "delivering",
+    "current_order_id": "ord-1010",
+    "rating": 4.9,
+    "total_deliveries": 189,
+    "zone": "South Side Chicago"
+  },
+  {
+    "driver_id": "drv-005",
+    "name": "Kevin Park",
+    "phone": "555-2005",
+    "vehicle": "Nissan Altima 2021",
+    "status": "available",
+    "current_order_id": null,
+    "rating": 4.6,
+    "total_deliveries": 422,
+    "zone": "Lincoln Park Chicago"
+  }
+]
