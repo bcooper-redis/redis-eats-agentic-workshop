@@ -92,17 +92,42 @@ Open this in an Incognito window to test it as an attendee would.
 
 ## What Attendees Need Before the Session
 
-Unlike Workshop 1, Workshop 2 requires **five services** to be pre-provisioned:
+Unlike Workshop 1, Workshop 2 requires **five services**. Context Retriever has an extra automated step.
 
-| Service | Where to provision | What to save |
+| Service | Where to provision | What attendees need |
 |---|---|---|
 | Redis Cloud database | [redis.io/try-free](https://redis.io/try-free) | CLI command from Connect → Redis CLI |
 | OpenAI API key | [platform.openai.com](https://platform.openai.com) | `sk-...` key |
 | Agent Memory | Redis Cloud → Context Engine → Agent Memory | URL, Store ID, API key |
-| Context Retriever | Redis Cloud → Context Engine → Context Retriever | URL, Admin key, Agent key, MCP URL |
+| Context Retriever | See setup guide below | Agent key + MCP URL only (instructor handles the rest) |
 | LangCache | Redis Cloud → Context Engine → LangCache | URL, Cache ID, API key (same as W1) |
 
-> **Tip:** Send attendees a setup checklist email 2 days before the workshop so they arrive with all five services provisioned. Agent Memory and Context Retriever provisioning takes 5–10 minutes in the Redis Cloud console.
+### Context Retriever: Instructor Pre-Work Required
+
+Context Retriever needs a **context surface** (data model) created before attendees can use it. This is a one-time step that runs in about 30 seconds using the setup script.
+
+**As the instructor, run this before the workshop:**
+
+```bash
+# 1. Provision the service in Redis Cloud (UI, ~2 min)
+#    Redis Cloud → Context Engine → Context Retriever → Create service
+#    Copy the Service URL, Admin key, and MCP URL from the console
+
+# 2. Load the workshop data into Redis
+python3 scripts/load_live_data.py --redis-url "redis://default:password@host:port"
+
+# 3. Run the setup script (creates context surface + agent key automatically)
+python3 scripts/setup_context_retriever.py \
+  --ctx-url   "https://your-service.redis.io" \
+  --admin-key "your-admin-key" \
+  --redis-url "redis://default:password@host:port"
+```
+
+The script prints a `CTX_AGENT_KEY`. **Share only the agent key and MCP URL with attendees** — they do not need the admin key or the setup script.
+
+> See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full setup guide with screenshots and troubleshooting.
+
+> **Tip:** Send attendees a setup checklist email 2 days before the workshop. Agent Memory provisioning takes 5–10 minutes. Context Retriever provisioning + script is handled by the instructor.
 
 ---
 
@@ -122,6 +147,13 @@ https://github.com/YOUR-USERNAME/redis-eats-agentic-workshop
 
 ## Pre-Workshop Checklist
 
+**Instructor pre-work (complete before the session):**
+- [ ] Context Retriever service provisioned and Active in Redis Cloud
+- [ ] `scripts/load_live_data.py` run against your Redis Cloud database
+- [ ] `scripts/setup_context_retriever.py` run — context surface created, agent key saved
+- [ ] Agent key and MCP URL shared with attendees (they need these two values only)
+
+**Colab verification (test in an Incognito window):**
 - [ ] GitHub repo is public and all files visible
 - [ ] Colab link opens without errors
 - [ ] Cell 1 (Colab Setup) clones repo and prints working directory
@@ -130,7 +162,7 @@ https://github.com/YOUR-USERNAME/redis-eats-agentic-workshop
 - [ ] Cell 8 (Redis check) shows all 4 sub-checks green
 - [ ] Cell 10 (OpenAI check) shows all 3 sub-checks green
 - [ ] Cell 12 (Agent Memory) shows `✅ Agent Memory ready`
-- [ ] Cell 14 (Context Retriever) shows tools listed
+- [ ] Cell 14 (Context Retriever) shows `✅ MCP client connected` with tools listed
 - [ ] Your instructor credentials for all 5 services are ready and tested
 - [ ] Colab link is in your slide deck and invite email
 

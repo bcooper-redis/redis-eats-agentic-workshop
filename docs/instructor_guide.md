@@ -32,10 +32,31 @@ By the end, every attendee should have a working agentic pipeline that knows who
 1. Redis Cloud database (from Workshop 1 — same instance)
 2. OpenAI API key with credits
 3. Agent Memory service — Redis Cloud → Context Engine → Agent Memory
-4. Context Retriever service — Redis Cloud → Context Engine → Context Retriever
+4. Context Retriever service — see below
 5. LangCache — same instance as Workshop 1
 
-> **Action item:** Send a setup checklist to attendees 48 hours before the workshop. Provisioning Agent Memory and Context Retriever takes 5–10 minutes but needs to be done in advance.
+#### Context Retriever Setup (Two Steps — Must Be Done Before the Session)
+
+Context Retriever requires **one UI click and one script run**. See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full guide.
+
+**Step 1 — Provision the service in Redis Cloud (~2 min, UI only):**
+- Redis Cloud → Context Engine → Context Retriever → **Create service**
+- Select the workshop database, name it, click Create
+- Wait for status to show **Active**
+- Copy: Service URL, Admin key, MCP URL
+
+**Step 2 — Run the setup script (~30 sec, automated):**
+```bash
+python3 scripts/setup_context_retriever.py \
+  --ctx-url   "https://your-service.redis.io" \
+  --admin-key "your-admin-key" \
+  --redis-url "redis://default:password@host:port"
+```
+The script creates the context surface (Order, Customer, Restaurant entities) and generates an agent key. It prints exactly what to paste into the notebook.
+
+> **Instructor shortcut:** Run the setup script yourself once before the session, then share only the `CTX_AGENT_KEY` and `CTX_MCP_URL` with attendees. They paste two values instead of four and skip the setup script entirely.
+
+> **Action item:** Send a setup checklist to attendees 48 hours before the workshop. Provisioning Agent Memory and Context Retriever takes 5–10 minutes but must be done in advance.
 
 ### What Attendees Build
 
@@ -147,7 +168,7 @@ Total target: **2.5–3 hours**
 > "Context Retriever is the component that makes Redis data available to agents through a governed interface. Instead of the agent running arbitrary Redis queries — which could be wrong, slow, or unsafe — it calls named tools and gets back structured responses."
 
 **Walk through `list_tools()` output:**
-> "The tools you see here were defined in the Redis Cloud console when you provisioned the Context Retriever service. The agent doesn't know how they work internally — it just calls `get_order_status` with an order ID and gets back the order data. The schema is what governs access."
+> "The tools you see here were created by the setup script that ran before the workshop — `setup_context_retriever.py`. It defined three entities — Order, Customer, Restaurant — mapped to the Redis Hashes we loaded in Section 2, and Context Retriever auto-generated a tool for each one. The agent doesn't know how they work internally — it just calls `get_order_status` with an order ID and gets back the order data. The schema is what governs access."
 
 **Run `call_tool()` directly:**
 > "Watch what happens. The MCP client sends the call to the Context Retriever service, which reads the `redis-eats:order:ord-1002` Hash from Redis and returns it as structured JSON. The agent gets clean, typed data — not raw Redis output."
@@ -289,12 +310,20 @@ The admin URL (for `ContextSurfacesClient`) is different. Make sure attendees pa
 
 **Symptom:** `list_tools()` returns `[]`.
 
-The Context Retriever service was provisioned but no context surfaces have been defined yet. Attendees need to:
-1. Open Redis Cloud → Context Retriever → their service
-2. Define at least one context surface pointing at the `redis-eats:order:*` keys
-3. Re-run Section 1.5
+The Context Retriever service was provisioned but the setup script has not been run yet — the context surface (data model) does not exist.
 
-For a workshop, consider pre-defining the surfaces as part of the pre-workshop setup instructions.
+**Fix:** Run the setup script:
+```bash
+python3 scripts/setup_context_retriever.py \
+  --ctx-url   "https://your-service.redis.io" \
+  --admin-key "your-admin-key" \
+  --redis-url "redis://default:password@host:port"
+```
+Then re-run Section 1.5. Tools should appear immediately.
+
+> See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full setup guide and troubleshooting steps.
+
+**Instructor shortcut:** Run the setup script yourself before the session. Share only the `CTX_AGENT_KEY` and `CTX_MCP_URL` with attendees — they never need the admin key or the setup script.
 
 ---
 
@@ -461,9 +490,28 @@ Section 1 has five credential groups. Budget 15 minutes and do not rush it. If o
 
 Start Section 3 (policy index check) running as soon as Section 2 is done. If it needs to rebuild (3–5 minutes), use that time to explain the Context Retriever architecture in depth. The rebuild runs in the background.
 
+### Context Retriever: Run the Setup Script Before the Session
+
+The Context Retriever setup script must be run **before** the workshop — not during it. Budget 5 minutes for this in your pre-session prep.
+
+```bash
+python3 scripts/setup_context_retriever.py \
+  --ctx-url   "https://your-service.redis.io" \
+  --admin-key "your-admin-key" \
+  --redis-url "redis://default:password@host:port"
+```
+
+The script creates the context surface and prints an agent key. For the smoothest attendee experience:
+- Run the script yourself once
+- Share only `CTX_AGENT_KEY` and `CTX_MCP_URL` with attendees
+- Attendees paste two values — no admin key, no setup script required on their end
+
+See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full guide.
+
 ### Instructor Fallback Setup
 
 Before the session, prepare your own credentials for all 5 services and pre-run Sections 1–6. Have the following ready:
+- Context Retriever setup script already run, tools confirmed in `list_tools()`
 - A demo session seeded with Alex Rivera's long-term memories
 - Confirmed tool list from `list_tools()`
 - At least one successful `ask_bot()` call
