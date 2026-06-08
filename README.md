@@ -2,7 +2,7 @@
 
 > **Workshop 2 of 2** — Build a context-aware AI agent on Redis Cloud using Redis Iris: Agent Memory, Context Retriever, LangCache, and RedisVL.
 
-This workshop extends [Workshop 1 (RAG Chatbot)](https://github.com/your-org/redis-eats-rag-workshop) into a full **context-aware support agent** that knows who the customer is, remembers conversations, looks up live order data, and answers policy questions — all grounded in Redis Cloud.
+This workshop extends [Workshop 1 (RAG Chatbot)](https://github.com/bcooper-redis/redis-eats-rag-workshop) into a full **context-aware support agent** that knows who the customer is, remembers conversations, looks up live order data, and answers policy questions — all grounded in Redis Cloud.
 
 ---
 
@@ -51,7 +51,7 @@ Complete these **before** the workshop:
 
 ### Option 1 — Google Colab (recommended)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/your-org/redis-eats-agentic-workshop/blob/main/notebooks/redis_eats_agentic_workshop.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/bcooper-redis/redis-eats-agentic-workshop/blob/main/notebooks/redis_eats_agentic_workshop.ipynb)
 
 ### Option 2 — Local
 
