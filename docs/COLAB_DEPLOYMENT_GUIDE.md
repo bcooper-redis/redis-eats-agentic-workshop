@@ -92,42 +92,43 @@ Open this in an Incognito window to test it as an attendee would.
 
 ## What Attendees Need Before the Session
 
-Unlike Workshop 1, Workshop 2 requires **five services**. Context Retriever has an extra automated step.
+Unlike Workshop 1, Workshop 2 requires **five services**. Each attendee provisions their own Context Retriever service using the Redis Cloud wizard — the notebook creates the context surface automatically.
 
 | Service | Where to provision | What attendees need |
 |---|---|---|
 | Redis Cloud database | [redis.io/try-free](https://redis.io/try-free) | CLI command from Connect → Redis CLI |
 | OpenAI API key | [platform.openai.com](https://platform.openai.com) | `sk-...` key |
 | Agent Memory | Redis Cloud → Context Engine → Agent Memory | URL, Store ID, API key |
-| Context Retriever | See setup guide below | Agent key + MCP URL only (instructor handles the rest) |
+| Context Retriever | Redis Cloud → Context Engine → Context Retriever (see below) | Service URL, Admin key, MCP URL |
 | LangCache | Redis Cloud → Context Engine → LangCache | URL, Cache ID, API key (same as W1) |
 
-### Context Retriever: Instructor Pre-Work Required
+### Context Retriever: Wizard Setup (No Script Required)
 
-Context Retriever needs a **context surface** (data model) created before attendees can use it. This is a one-time step that runs in about 30 seconds using the setup script.
+Attendees provision their own Context Retriever service using the Redis Cloud wizard.
+The Colab notebook (Section 4.0) creates the context surface and agent key automatically.
 
-**As the instructor, run this before the workshop:**
+**Attendee steps (5 minutes, before the session):**
 
-```bash
-# 1. Provision the service in Redis Cloud (UI, ~2 min)
-#    Redis Cloud → Context Engine → Context Retriever → Create service
-#    Copy the Service URL, Admin key, and MCP URL from the console
+1. Redis Cloud → Context Engine → Context Retriever → **Create service**
+2. Select their Redis Cloud database and give it a name
+3. The wizard asks for an entity — use this placeholder to get through it:
+   - Entity name: `Placeholder` | Field: `id` | Type: `String` | Mark as key: **Yes**
+4. Click **Create** and wait for **Active** status
+5. From the **Connection** tab, copy:
+   - **Service URL** → `CTX_SURFACES_URL`
+   - **MCP endpoint** → `CTX_MCP_URL`
+6. From **API Keys**, create an admin key → `CTX_ADMIN_KEY`
+7. Paste all three into Section 1.1 of the notebook — leave `CTX_AGENT_KEY = None`
 
-# 2. Load the workshop data into Redis
-python3 scripts/load_live_data.py --redis-url "redis://default:password@host:port"
+**The notebook does the rest in Section 4.0:**
+- Defines the real Redis Eats entities (Order, Customer, Restaurant)
+- Creates the `redis-eats-workshop` context surface
+- Generates an agent key automatically
+- Connects the MCP client
 
-# 3. Run the setup script (creates context surface + agent key automatically)
-python3 scripts/setup_context_retriever.py \
-  --ctx-url   "https://your-service.redis.io" \
-  --admin-key "your-admin-key" \
-  --redis-url "redis://default:password@host:port"
-```
+> See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full wizard walkthrough with screenshots and troubleshooting.
 
-The script prints a `CTX_AGENT_KEY`. **Share only the agent key and MCP URL with attendees** — they do not need the admin key or the setup script.
-
-> See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full setup guide with screenshots and troubleshooting.
-
-> **Tip:** Send attendees a setup checklist email 2 days before the workshop. Agent Memory provisioning takes 5–10 minutes. Context Retriever provisioning + script is handled by the instructor.
+> **Tip:** Send attendees a setup checklist email 2 days before the workshop. Agent Memory and Context Retriever provisioning each take 5–10 minutes. Attendees only need to provision the service — the notebook handles surface creation during the workshop.
 
 ---
 
@@ -148,10 +149,18 @@ https://github.com/YOUR-USERNAME/redis-eats-agentic-workshop
 ## Pre-Workshop Checklist
 
 **Instructor pre-work (complete before the session):**
-- [ ] Context Retriever service provisioned and Active in Redis Cloud
-- [ ] `scripts/load_live_data.py` run against your Redis Cloud database
-- [ ] `scripts/setup_context_retriever.py` run — context surface created, agent key saved
-- [ ] Agent key and MCP URL shared with attendees (they need these two values only)
+- [ ] Your own Redis Cloud database is provisioned and Active
+- [ ] Your own Context Retriever service is provisioned and Active in Redis Cloud
+- [ ] Service URL, Admin key, and MCP URL copied from the Redis Cloud console
+- [ ] All five services tested end-to-end using your own credentials in the notebook
+
+**Attendee pre-work (send in the invite email):**
+- [ ] Redis Cloud database provisioned (free tier is fine)
+- [ ] OpenAI API key from [platform.openai.com](https://platform.openai.com)
+- [ ] Agent Memory service provisioned and Active in Redis Cloud
+- [ ] Context Retriever service provisioned and Active in Redis Cloud (wizard placeholder entity)
+   - Service URL, Admin key, and MCP URL copied from the console
+- [ ] LangCache credentials ready (same as Workshop 1, or new instance)
 
 **Colab verification (test in an Incognito window):**
 - [ ] GitHub repo is public and all files visible
@@ -159,11 +168,13 @@ https://github.com/YOUR-USERNAME/redis-eats-agentic-workshop
 - [ ] Cell 1 (Colab Setup) clones repo and prints working directory
 - [ ] Cell 3 (pip install) completes and prompts for restart
 - [ ] After restart, Cell 3 shows `✅ All packages ready`
-- [ ] Cell 8 (Redis check) shows all 4 sub-checks green
-- [ ] Cell 10 (OpenAI check) shows all 3 sub-checks green
-- [ ] Cell 12 (Agent Memory) shows `✅ Agent Memory ready`
-- [ ] Cell 14 (Context Retriever) shows `✅ MCP client connected` with tools listed
-- [ ] Your instructor credentials for all 5 services are ready and tested
+- [ ] Section 1.1 credentials cell accepts all values without errors
+- [ ] Section 1.2 (Redis check) shows all 4 sub-checks green
+- [ ] Section 1.3 (OpenAI check) shows all 3 sub-checks green
+- [ ] Section 1.4 (Agent Memory) shows `✅ Agent Memory ready`
+- [ ] Section 1.5 (Context Retriever) shows `✅ Context Retriever service reachable`
+- [ ] Section 4.0 creates surface, generates agent key, connects MCP client
+- [ ] Section 4.1 lists 3 tools: `get_order`, `get_customer`, `get_restaurant`
 - [ ] Colab link is in your slide deck and invite email
 
 ---

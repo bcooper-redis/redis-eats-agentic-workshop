@@ -35,28 +35,35 @@ By the end, every attendee should have a working agentic pipeline that knows who
 4. Context Retriever service — see below
 5. LangCache — same instance as Workshop 1
 
-#### Context Retriever Setup (Two Steps — Must Be Done Before the Session)
+#### Context Retriever Setup (Wizard Only — No Script Required)
 
-Context Retriever requires **one UI click and one script run**. See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full guide.
+Attendees provision the Context Retriever service using the Redis Cloud wizard. The
+Colab notebook (Section 4.0) creates the real context surface automatically.
+See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full guide.
 
-**Step 1 — Provision the service in Redis Cloud (~2 min, UI only):**
+**Step 1 — Provision the service in Redis Cloud (~3 min, wizard):**
 - Redis Cloud → Context Engine → Context Retriever → **Create service**
-- Select the workshop database, name it, click Create
-- Wait for status to show **Active**
-- Copy: Service URL, Admin key, MCP URL
+- Select the workshop database, name it (e.g. `redis-eats-workshop`)
+- The wizard requires a placeholder entity to proceed — use:
+  - Entity name: `Placeholder` | Field: `id` | Type: `String` | Mark as key: Yes
+- Click **Create** and wait for status **Active**
+- From the **Connection** tab, copy: **Service URL** (`CTX_SURFACES_URL`) and **MCP endpoint** (`CTX_MCP_URL`)
+- From **API Keys**, create and copy an **admin key** (`CTX_ADMIN_KEY`)
 
-**Step 2 — Run the setup script (~30 sec, automated):**
-```bash
-python3 scripts/setup_context_retriever.py \
-  --ctx-url   "https://your-service.redis.io" \
-  --admin-key "your-admin-key" \
-  --redis-url "redis://default:password@host:port"
+**Step 2 — Paste three values into Section 1.1 of the notebook:**
 ```
-The script creates the context surface (Order, Customer, Restaurant entities) and generates an agent key. It prints exactly what to paste into the notebook.
+CTX_SURFACES_URL = "https://your-service.redis.io"
+CTX_ADMIN_KEY    = "your-admin-key"
+CTX_MCP_URL      = "https://your-mcp-endpoint.redis.io"
+```
+Leave `CTX_AGENT_KEY = None` — it is created automatically in Section 4.0.
 
-> **Instructor shortcut:** Run the setup script yourself once before the session, then share only the `CTX_AGENT_KEY` and `CTX_MCP_URL` with attendees. They paste two values instead of four and skip the setup script entirely.
+**Step 3 — Run Section 4.0 in the notebook:**
+Section 4.0 defines the Order, Customer, and Restaurant entities as Python code,
+creates the `redis-eats-workshop` context surface, generates an agent key, and
+connects the MCP client — all automatically.
 
-> **Action item:** Send a setup checklist to attendees 48 hours before the workshop. Provisioning Agent Memory and Context Retriever takes 5–10 minutes but must be done in advance.
+> **Action item:** Send a setup checklist to attendees 48 hours before the workshop. Provisioning Agent Memory and Context Retriever each take 5–10 minutes but must be done in advance.
 
 ### What Attendees Build
 
@@ -164,11 +171,13 @@ Total target: **2.5–3 hours**
 
 ### Section 4 — Context Retriever (15 min)
 
-**Say:**
-> "Context Retriever is the component that makes Redis data available to agents through a governed interface. Instead of the agent running arbitrary Redis queries — which could be wrong, slow, or unsafe — it calls named tools and gets back structured responses."
+**Say (Section 4.0 — creating the surface):**
+> "Unlike the setup script approach, we're defining the entity model right here in the notebook as Python code. This is how Context Retriever actually works — you describe your data model and it auto-generates the tools. Each entity class maps to a Redis key pattern. The `__redis_key_template__` says 'look at `redis-eats:order:{order_id}` for Order data'. Context Retriever handles the rest."
 
-**Walk through `list_tools()` output:**
-> "The tools you see here were created by the setup script that ran before the workshop — `setup_context_retriever.py`. It defined three entities — Order, Customer, Restaurant — mapped to the Redis Hashes we loaded in Section 2, and Context Retriever auto-generated a tool for each one. The agent doesn't know how they work internally — it just calls `get_order_status` with an order ID and gets back the order data. The schema is what governs access."
+> "Watch the output — it created three tools automatically from our three entity classes. We didn't write `get_order`, `get_customer`, or `get_restaurant` ourselves. The schema is the interface contract."
+
+**Walk through `list_tools()` output (Section 4.1):**
+> "Here are the tools the agent can call — one per entity. The agent doesn't know how they work internally — it just calls `get_order` with an order ID and gets back structured data. The schema is what governs access, and it was defined right here in the notebook in the cell above."
 
 **Run `call_tool()` directly:**
 > "Watch what happens. The MCP client sends the call to the Context Retriever service, which reads the `redis-eats:order:ord-1002` Hash from Redis and returns it as structured JSON. The agent gets clean, typed data — not raw Redis output."
@@ -308,22 +317,16 @@ The admin URL (for `ContextSurfacesClient`) is different. Make sure attendees pa
 
 ### No Tools Listed After MCP Connect
 
-**Symptom:** `list_tools()` returns `[]`.
+**Symptom:** `list_tools()` returns `[]` in Section 4.1.
 
-The Context Retriever service was provisioned but the setup script has not been run yet — the context surface (data model) does not exist.
+The context surface hasn't finished initialising yet, or Section 4.0 hasn't been run.
 
-**Fix:** Run the setup script:
-```bash
-python3 scripts/setup_context_retriever.py \
-  --ctx-url   "https://your-service.redis.io" \
-  --admin-key "your-admin-key" \
-  --redis-url "redis://default:password@host:port"
-```
-Then re-run Section 1.5. Tools should appear immediately.
+**Fix:**
+1. Confirm Section 4.0 completed without errors — look for `✅ Context Retriever setup complete`
+2. If Section 4.0 succeeded but `list_tools()` returns empty, wait 30 seconds and re-run Section 4.1
+3. If Section 4.0 errored, fix the error and re-run it — it is safe to re-run (it detects the existing surface and creates a fresh agent key)
 
-> See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full setup guide and troubleshooting steps.
-
-**Instructor shortcut:** Run the setup script yourself before the session. Share only the `CTX_AGENT_KEY` and `CTX_MCP_URL` with attendees — they never need the admin key or the setup script.
+> See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for full troubleshooting steps.
 
 ---
 
@@ -381,15 +384,24 @@ Checking Agent Memory connectivity...
 
 ### Section 1.5 — Context Retriever
 ```
-Checking Context Retriever connectivity...
+✅ Context Retriever service reachable: https://your-service.redis.io
+✅ Context Retriever credentials saved
+   Surface creation and MCP client setup: Section 4
+```
 
-  ✅ Context Retriever admin client connected
-  ✅ MCP client connected  (3 tool(s) available)
-     • get_order_status: Look up the current status of a Redis Eats order...
-     • get_customer_profile: Retrieve a customer's profile...
-     • get_restaurant_info: Retrieve information about a restaurant...
-
-✅ Context Retriever ready
+### Section 4.0 — Create Context Surface
+```
+Building data model...
+✅ Data model built: 3 entities — ['Order', 'Customer', 'Restaurant']
+✅ Redis connection: your-host:port  tls=True
+Creating context surface 'redis-eats-workshop'...
+✅ Surface created — ID: surf-xxxxxxxxxxxx
+   Tools generated: ['get_order', 'get_customer', 'get_restaurant']
+Creating agent key...
+✅ Agent key created
+Connecting MCP client...
+✅ MCP client connected — ready for tool calls
+✅ Context Retriever setup complete — proceed to Section 4.1 to see your tools.
 ```
 
 ### Section 2 — Live Data
@@ -490,30 +502,29 @@ Section 1 has five credential groups. Budget 15 minutes and do not rush it. If o
 
 Start Section 3 (policy index check) running as soon as Section 2 is done. If it needs to rebuild (3–5 minutes), use that time to explain the Context Retriever architecture in depth. The rebuild runs in the background.
 
-### Context Retriever: Run the Setup Script Before the Session
+### Context Retriever: Provision the Service Before the Session
 
-The Context Retriever setup script must be run **before** the workshop — not during it. Budget 5 minutes for this in your pre-session prep.
+Attendees need their Context Retriever service to be **Active** before the workshop
+starts — provisioning takes 3–5 minutes and cannot be done during the session.
 
-```bash
-python3 scripts/setup_context_retriever.py \
-  --ctx-url   "https://your-service.redis.io" \
-  --admin-key "your-admin-key" \
-  --redis-url "redis://default:password@host:port"
-```
+The surface creation (the interesting part) happens live in Section 4.0 of the notebook.
+This is an intentional design choice: attendees see the entity model defined as code,
+which reinforces the concept of how Context Retriever works.
 
-The script creates the context surface and prints an agent key. For the smoothest attendee experience:
-- Run the script yourself once
-- Share only `CTX_AGENT_KEY` and `CTX_MCP_URL` with attendees
-- Attendees paste two values — no admin key, no setup script required on their end
+**Your pre-session checklist for Context Retriever:**
+1. Provision your own service using the wizard (placeholder entity to get through it)
+2. Copy your Service URL, Admin key, and MCP URL
+3. Paste them into Section 1.1 and run through Section 4.0 to confirm everything works
+4. Keep the notebook open — you can demo from this during the session
 
 See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full guide.
 
 ### Instructor Fallback Setup
 
 Before the session, prepare your own credentials for all 5 services and pre-run Sections 1–6. Have the following ready:
-- Context Retriever setup script already run, tools confirmed in `list_tools()`
-- A demo session seeded with Alex Rivera's long-term memories
-- Confirmed tool list from `list_tools()`
+- Section 4.0 already run — context surface created, tools confirmed in Section 4.1
+- A demo session seeded with Alex Rivera's long-term memories (Section 5.2a)
+- Your notebook open and ready to demo from at any point
 - At least one successful `ask_bot()` call
 
 If something breaks mid-session, switch to showing your pre-run output.
