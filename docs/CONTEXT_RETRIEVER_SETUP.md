@@ -13,8 +13,8 @@ That's it. The notebook handles everything after the wizard.
 ## Step 1 — Provision the Context Retriever Service in Redis Cloud
 
 1. Log into [app.redislabs.com](https://app.redislabs.com)
-2. In the left sidebar, click **Context Engine → Context Retriever**
-3. Click **Create service**
+2. In the left sidebar, under **AI Services**, click **Context Retriever**
+3. Click **New Service**
 4. Select your Redis Cloud database (same one used for the workshop)
 5. Give it a name (e.g. `redis-eats-workshop`)
 
@@ -41,33 +41,39 @@ wizard requirement:
 
 ### Copy These Values
 
-Once the service is Active, find and save these three values:
+Once the service is Active, find and save these **two** values:
 
 | Value | Where to find it |
 |---|---|
-| **Service URL** (`CTX_SURFACES_URL`) | Context Retriever → your service → **Connection** tab |
-| **Admin key** (`CTX_ADMIN_KEY`) | Context Retriever → your service → **API Keys** → Create admin key |
-| **MCP URL** (`CTX_MCP_URL`) | Context Retriever → your service → Connection tab → **MCP endpoint** |
+| **Admin key** (`CTX_ADMIN_KEY`) | Context Retriever page → **Admin Keys** tab → Create admin key |
+| **MCP Server URL** (`CTX_MCP_URL`) | Click your service → **Overview** tab → **Details** section → **MCP Server URL** (use the copy icon) |
 
-> **Important:** The MCP URL is different from the Service URL. It ends in `/mcp`
-> or has a different hostname. Copy it separately — they are both on the Connection tab.
+> **Note:** Admin Keys is a tab at the top of the Context Retriever page (next to
+> "Context Retriever Services") — not inside an individual service. The service
+> detail page has its own tabs: **Overview**, **Agent Keys**, and **Tool Calls Logs**.
+
+> **Service URL:** You do not need to copy a separate service URL. The notebook
+> derives it automatically from the MCP Server URL (same host, without the `/mcp`
+> path). Example: MCP URL `https://gcp-us-east4.context-surfaces.redis.io/mcp`
+> → service URL `https://gcp-us-east4.context-surfaces.redis.io`.
 
 > **Agent key:** You do not need to create an agent key manually. The notebook
-> creates one in Section 4 using your admin key.
+> creates one in Section 4 using your admin key — it will appear on your service's
+> **Agent Keys** tab after Section 4.0 runs.
 
 ---
 
 ## Step 2 — Paste Values into the Notebook
 
-In **Section 1.1** of the Colab notebook, paste the three values:
+In **Section 1.1** of the Colab notebook, paste the two values:
 
 ```python
-CTX_SURFACES_URL = "https://your-context-surfaces-host.redis.io"
-CTX_ADMIN_KEY    = "your-admin-key"
-CTX_MCP_URL      = "https://your-mcp-host.redis.io"
+CTX_ADMIN_KEY = "your-admin-key"
+CTX_MCP_URL   = "https://gcp-us-east4.context-surfaces.redis.io/mcp"
 ```
 
-Leave `CTX_AGENT_KEY = None` as-is. It gets set automatically.
+Leave `CTX_SURFACES_URL` (derived from the MCP URL) and `CTX_AGENT_KEY = None`
+as-is — both are set automatically.
 
 ---
 
@@ -103,6 +109,10 @@ After this you will see three tools in Section 4.1:
 | `get_customer` | Customer profile, loyalty tier, dietary preferences |
 | `get_restaurant` | Restaurant name, status, hours, menu highlights |
 
+> **Verify in the console:** Refresh the Context Retriever page in Redis Cloud —
+> the services list shows **Entities** and **Tools** columns. You should see
+> `redis-eats-workshop` listed with its entities and tools after Section 4.0 runs.
+
 ---
 
 ## Re-running After a Reset
@@ -123,7 +133,7 @@ The `ℹ️  Surface already exists` message is expected on the second run.
 |---|---|
 | `❌ Context Retriever unreachable` (Section 1.5) | Service still provisioning — wait 2–3 min and re-run |
 | `❌ Surface creation failed: 401` | Admin key is wrong — re-copy from Redis Cloud console |
-| `❌ MCP client connection failed` | `CTX_MCP_URL` is wrong — it must be the MCP endpoint (Connection tab), not the admin URL |
+| `❌ MCP client connection failed` | `CTX_MCP_URL` is wrong — copy the **MCP Server URL** from your service's Overview tab (it ends in `/mcp`) |
 | Section 4.1 `list_tools()` returns 0 tools | Surface may still be initialising — wait 30 seconds and re-run Section 4.1 |
 | Tools return `{"error": "not found"}` | Live data not loaded — re-run Section 2 first |
 | `ℹ️  Surface already exists` in Section 4.0 | Normal on re-run — the existing surface is reused |
@@ -133,8 +143,8 @@ The `ℹ️  Surface already exists` message is expected on the second run.
 ## For Instructors: Shared Service Option
 
 For large workshops you can provision one shared Context Retriever service
-and give all attendees the same three values (`CTX_SURFACES_URL`, `CTX_ADMIN_KEY`,
-`CTX_MCP_URL`). Each attendee runs Section 4.0, which creates a new agent key for
+and give all attendees the same two values (`CTX_ADMIN_KEY` and `CTX_MCP_URL`).
+Each attendee runs Section 4.0, which creates a new agent key for
 their session. The surface is created once by the first attendee (or the instructor)
 and subsequent runs hit the `ℹ️  Surface already exists` path.
 

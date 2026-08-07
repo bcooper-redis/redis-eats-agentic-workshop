@@ -32,13 +32,14 @@ Complete these **before** the workshop:
 ### 2 — OpenAI API Key
 - Paid account at [platform.openai.com](https://platform.openai.com)
 
-### 3 — Agent Memory Service (Redis Cloud → Context Engine → Agent Memory)
+### 3 — Agent Memory Service (Redis Cloud → AI Services → Agent Memory)
 - Provision a new Agent Memory service in the Redis Cloud console
-- Save the **URL**, **Store ID**, and **API key**
+- Save the **URL**, **Store ID**, and **API key** (the Store ID is shown in the services list)
 
-### 4 — Context Retriever Service (Redis Cloud → Context Engine → Context Retriever)
-- Provision a new Context Retriever service in the Redis Cloud console
-- Save the **URL**, **Admin key**, **Agent key**, and **MCP URL**
+### 4 — Context Retriever Service (Redis Cloud → AI Services → Context Retriever)
+- Provision a new Context Retriever service using the wizard (a placeholder entity is required to complete it — see the [setup guide](docs/CONTEXT_RETRIEVER_SETUP.md))
+- Save the **Admin key** (from the **Admin Keys** tab) and the **MCP Server URL** (your service → Overview tab → Details)
+- No service URL or agent key needed — the notebook derives/creates both automatically
 
 ### 5 — LangCache (same as Workshop 1)
 - LangCache credentials from Workshop 1 work here too
@@ -101,7 +102,7 @@ redis-eats-agentic-workshop/
 
 ## What Is Covered
 
-- Redis Iris Context Engine overview
+- Redis Iris AI services overview
 - Mocked RDI: loading live operational data into Redis
 - Context Retriever: defining and calling governed data tools
 - Agent Memory: session memory + long-term memory

@@ -15,7 +15,7 @@ workshop notebook:
 
 Prerequisites:
   - Context Retriever service provisioned in Redis Cloud
-  - Admin key from Redis Cloud → Context Engine → Context Retriever → your service
+  - Admin key from Redis Cloud → AI Services → Context Retriever → Admin Keys tab
   - Redis Cloud database running with workshop data already loaded
     (run scripts/load_live_data.py first, or run Section 2 of the notebook)
 
@@ -332,7 +332,7 @@ def main():
     print(f"  CTX_SURFACES_URL = \"{args.ctx_url}\"")
     print(f"  CTX_ADMIN_KEY    = \"{args.admin_key}\"")
     print(f"  CTX_AGENT_KEY    = \"{agent_key.key}\"")
-    print(f"  CTX_MCP_URL      = \"<get from Redis Cloud console — Context Retriever → MCP URL>\"")
+    print(f"  CTX_MCP_URL      = \"<from Redis Cloud — your service → Overview tab → MCP Server URL>\"")
     print()
     print("  Surface ID for reference:")
     print(f"    {existing_surface.id}")

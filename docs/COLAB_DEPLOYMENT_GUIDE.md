@@ -98,9 +98,9 @@ Unlike Workshop 1, Workshop 2 requires **five services**. Each attendee provisio
 |---|---|---|
 | Redis Cloud database | [redis.io/try-free](https://redis.io/try-free) | CLI command from Connect → Redis CLI |
 | OpenAI API key | [platform.openai.com](https://platform.openai.com) | `sk-...` key |
-| Agent Memory | Redis Cloud → Context Engine → Agent Memory | URL, Store ID, API key |
-| Context Retriever | Redis Cloud → Context Engine → Context Retriever (see below) | Service URL, Admin key, MCP URL |
-| LangCache | Redis Cloud → Context Engine → LangCache | URL, Cache ID, API key (same as W1) |
+| Agent Memory | Redis Cloud → AI Services → Agent Memory | URL, Store ID, API key (Store ID is in the services list) |
+| Context Retriever | Redis Cloud → AI Services → Context Retriever (see below) | Admin key + MCP Server URL |
+| LangCache | Redis Cloud → AI Services → LangCache | URL, Cache ID, API key (same as W1) |
 
 ### Context Retriever: Wizard Setup (No Script Required)
 
@@ -109,16 +109,14 @@ The Colab notebook (Section 4.0) creates the context surface and agent key autom
 
 **Attendee steps (5 minutes, before the session):**
 
-1. Redis Cloud → Context Engine → Context Retriever → **Create service**
+1. Redis Cloud → **AI Services** → Context Retriever → **New Service**
 2. Select their Redis Cloud database and give it a name
 3. The wizard asks for an entity — use this placeholder to get through it:
    - Entity name: `Placeholder` | Field: `id` | Type: `String` | Mark as key: **Yes**
 4. Click **Create** and wait for **Active** status
-5. From the **Connection** tab, copy:
-   - **Service URL** → `CTX_SURFACES_URL`
-   - **MCP endpoint** → `CTX_MCP_URL`
-6. From **API Keys**, create an admin key → `CTX_ADMIN_KEY`
-7. Paste all three into Section 1.1 of the notebook — leave `CTX_AGENT_KEY = None`
+5. Click the service → **Overview** tab → Details → copy the **MCP Server URL** → `CTX_MCP_URL`
+6. From the **Admin Keys** tab (top of the Context Retriever page), create an admin key → `CTX_ADMIN_KEY`
+7. Paste both into Section 1.1 of the notebook — `CTX_SURFACES_URL` is derived automatically and `CTX_AGENT_KEY` stays `None`
 
 **The notebook does the rest in Section 4.0:**
 - Defines the real Redis Eats entities (Order, Customer, Restaurant)
@@ -151,7 +149,7 @@ https://github.com/YOUR-USERNAME/redis-eats-agentic-workshop
 **Instructor pre-work (complete before the session):**
 - [ ] Your own Redis Cloud database is provisioned and Active
 - [ ] Your own Context Retriever service is provisioned and Active in Redis Cloud
-- [ ] Service URL, Admin key, and MCP URL copied from the Redis Cloud console
+- [ ] Admin key and MCP Server URL copied from the Redis Cloud console
 - [ ] All five services tested end-to-end using your own credentials in the notebook
 
 **Attendee pre-work (send in the invite email):**
@@ -159,7 +157,7 @@ https://github.com/YOUR-USERNAME/redis-eats-agentic-workshop
 - [ ] OpenAI API key from [platform.openai.com](https://platform.openai.com)
 - [ ] Agent Memory service provisioned and Active in Redis Cloud
 - [ ] Context Retriever service provisioned and Active in Redis Cloud (wizard placeholder entity)
-   - Service URL, Admin key, and MCP URL copied from the console
+   - Admin key and MCP Server URL copied from the console
 - [ ] LangCache credentials ready (same as Workshop 1, or new instance)
 
 **Colab verification (test in an Incognito window):**

@@ -8,7 +8,7 @@
 
 ### Session Goal
 
-Teach developers and Redis customers how to build a context-aware AI agent using the full Redis Iris Context Engine — Agent Memory, Context Retriever, LangCache, and RedisVL — in 2.5 to 3 hours.
+Teach developers and Redis customers how to build a context-aware AI agent using the full set of Redis Iris AI services — Agent Memory, Context Retriever, LangCache, and RedisVL — in 2.5 to 3 hours.
 
 By the end, every attendee should have a working agentic pipeline that knows who the customer is, looks up live data, answers policy questions, and remembers conversations.
 
@@ -31,7 +31,7 @@ By the end, every attendee should have a working agentic pipeline that knows who
 
 1. Redis Cloud database (from Workshop 1 — same instance)
 2. OpenAI API key with credits
-3. Agent Memory service — Redis Cloud → Context Engine → Agent Memory
+3. Agent Memory service — Redis Cloud → AI Services → Agent Memory (Store ID is shown in the services list)
 4. Context Retriever service — see below
 5. LangCache — same instance as Workshop 1
 
@@ -42,21 +42,21 @@ Colab notebook (Section 4.0) creates the real context surface automatically.
 See [`docs/CONTEXT_RETRIEVER_SETUP.md`](CONTEXT_RETRIEVER_SETUP.md) for the full guide.
 
 **Step 1 — Provision the service in Redis Cloud (~3 min, wizard):**
-- Redis Cloud → Context Engine → Context Retriever → **Create service**
+- Redis Cloud → **AI Services** → Context Retriever → **New Service**
 - Select the workshop database, name it (e.g. `redis-eats-workshop`)
 - The wizard requires a placeholder entity to proceed — use:
   - Entity name: `Placeholder` | Field: `id` | Type: `String` | Mark as key: Yes
 - Click **Create** and wait for status **Active**
-- From the **Connection** tab, copy: **Service URL** (`CTX_SURFACES_URL`) and **MCP endpoint** (`CTX_MCP_URL`)
-- From **API Keys**, create and copy an **admin key** (`CTX_ADMIN_KEY`)
+- Click the service → **Overview** tab → Details → copy the **MCP Server URL** (`CTX_MCP_URL`)
+- From the **Admin Keys** tab (top of the Context Retriever page), create and copy an **admin key** (`CTX_ADMIN_KEY`)
 
-**Step 2 — Paste three values into Section 1.1 of the notebook:**
+**Step 2 — Paste two values into Section 1.1 of the notebook:**
 ```
-CTX_SURFACES_URL = "https://your-service.redis.io"
-CTX_ADMIN_KEY    = "your-admin-key"
-CTX_MCP_URL      = "https://your-mcp-endpoint.redis.io"
+CTX_ADMIN_KEY = "your-admin-key"
+CTX_MCP_URL   = "https://gcp-us-east4.context-surfaces.redis.io/mcp"
 ```
-Leave `CTX_AGENT_KEY = None` — it is created automatically in Section 4.0.
+`CTX_SURFACES_URL` is derived automatically from the MCP URL, and
+`CTX_AGENT_KEY = None` is created automatically in Section 4.0.
 
 **Step 3 — Run Section 4.0 in the notebook:**
 Section 4.0 defines the Order, Customer, and Restaurant entities as Python code,
@@ -138,9 +138,9 @@ Total target: **2.5–3 hours**
 **Where to pause:**
 - After credential cell — confirm no placeholder warnings before moving on
 - After Agent Memory check (Section 1.4) — this is the most common connection failure point
-- After Context Retriever check (Section 1.5) — confirm tools are listed
+- After Context Retriever check (Section 1.5) — confirm the service is reachable (tools come later, in Section 4.1)
 
-**Common issue:** Context Retriever MCP URL is different from the admin URL. Attendees often paste the wrong one. The MCP URL is shown separately in the Redis Cloud console.
+**Common issue:** Attendees paste a truncated or wrong MCP Server URL. It is on the service's **Overview** tab under Details and ends in `/mcp` — tell them to use the copy icon rather than selecting the text by hand.
 
 **Redis positioning:**
 > "Notice that Agent Memory, Context Retriever, and LangCache are all managed services that live on Redis Cloud. You're not running separate infrastructure for each — they're all part of the same Redis platform."
@@ -304,14 +304,14 @@ Total target: **2.5–3 hours**
 
 ### Context Retriever MCP URL Wrong
 
-**Symptom:** MCP client connects but `list_tools()` returns empty or errors.
+**Symptom:** MCP client connects but `list_tools()` returns empty or errors, or Section 1.5 reports the service unreachable.
 
-The MCP URL is shown separately from the admin URL in the Redis Cloud console. It typically looks like:
+The MCP Server URL is on the service's **Overview** tab under Details, and looks like:
 ```
-https://your-service-name-mcp.context-retriever.redis.io
+https://gcp-us-east4.context-surfaces.redis.io/mcp
 ```
 
-The admin URL (for `ContextSurfacesClient`) is different. Make sure attendees paste the correct URL into `CTX_MCP_URL`.
+It must end in `/mcp`. The notebook derives the service base URL (for `ContextSurfacesClient`) by stripping the `/mcp` path — so a wrong MCP URL breaks both clients. Have attendees use the copy icon next to the URL rather than selecting the text by hand.
 
 ---
 
@@ -513,7 +513,7 @@ which reinforces the concept of how Context Retriever works.
 
 **Your pre-session checklist for Context Retriever:**
 1. Provision your own service using the wizard (placeholder entity to get through it)
-2. Copy your Service URL, Admin key, and MCP URL
+2. Copy your Admin key (Admin Keys tab) and MCP Server URL (service → Overview tab)
 3. Paste them into Section 1.1 and run through Section 4.0 to confirm everything works
 4. Keep the notebook open — you can demo from this during the session
 
